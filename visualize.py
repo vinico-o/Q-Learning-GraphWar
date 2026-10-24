@@ -59,10 +59,10 @@ class GraphWarVizualizer:
         y = self.env.pos_alvo[1] 
 
         # cria um circulo de fato (hitbox), nao um ponto expandido
-        alvo = plt.patches.Circle((x, y), radius=self.env.raio_alvo, facecolor=self.cores["alvo"], zorder=5)
+        alvo = patches.Circle((x, y), radius=self.env.raio_alvo, facecolor=self.cores["alvo"], zorder=5)
         self.ax.add_patch(alvo)
 
-        self.ax.text(x, y + 3, f"Alvo ({x},{y})", color=self.cores["alvo"], fontsize=8, ha="center")
+        self.ax.text(x, y + 3, f"Alvo ({x:.1f},{y:.1f})", color=self.cores["alvo"], fontsize=8, ha="center")
           
 
     # Método para desenhar o obstáculo
@@ -71,7 +71,7 @@ class GraphWarVizualizer:
         y = self.env.pos_obstaculo[1] 
 
         # cria um circulo de fato (hitbox), nao um ponto expandido
-        obstaculo = plt.patches.Circle((x, y), radius=self.env.raio_obstaculo, facecolor=self.cores["obstaculo"], zorder=5, hatch="///")
+        obstaculo = patches.Circle((x, y), radius=self.env.raio_obstaculo, facecolor=self.cores["obstaculo"], zorder=5, hatch="///")
         self.ax.add_patch(obstaculo)
 
 
@@ -87,7 +87,7 @@ class GraphWarVizualizer:
             cor = self.cores["tiros"][indice_tiro % len(self.cores["tiros"])]
 
             #plot da linha
-            self.ax.plot(xs, ys, color=cor, linewidth=2, zorder=10, linestyle='-')
+            self.ax.plot(xs, ys, color=cor, linewidth=2, zorder=10, linestyle='-', label=f"Tiro {indice_tiro + 1}")
 
             #verificando status do tiro
             if status == "acertou":
@@ -156,20 +156,31 @@ class GraphWarVizualizer:
         self.desenhar_obstaculo()
 
         # desenha todas as trajetorias
-        # Ideia do passo a passo:
         for indice, tiro in enumerate(historico_tiros):
             pontos = tiro.get('curva', [])
             status = tiro.get('status', 'errou')
-            self.desenhar_trajetoria(pontos, indice, status)
+            
+            # 1. Anima a trajetória da bala
+            self.animar_tiro(pontos, indice)
 
-            # Atualiza a HUD para este tiro específico
+            # 2. Desenha o marcador de impacto no final da curva
+            if pontos:
+                x_fim, y_fim = pontos[-1]
+                if status == "acertou":
+                    self.ax.scatter(x_fim, y_fim, color="#a6e3a1", edgecolor="#ffffff", marker="*", s=220, zorder=15)
+                elif status == "colidiu_obstaculo":
+                    self.ax.scatter(x_fim, y_fim, color="#f38ba8", marker="X", s=140, zorder=15)
+                elif status == "errou":
+                    self.ax.scatter(x_fim, y_fim, color="#eba0ac", marker="o", s=60, zorder=15, clip_on=False)
+
+            # 3. Atualiza a HUD para este tiro específico
             self.desenhar_hud(estado_final, tiro.get('recompensa', 0), tiro)
 
             # Dá tempo para o usuário enxergar o tiro na tela antes do próximo:
             plt.draw()
-            plt.pause(1.0) # Espera 1 segundo
+            plt.pause(0.5)
         
-        self.ax.legend(loc="upper right", labels=["tiro 1", "tiro 2", "tiro 3"], title="Trajetórias", fontsize=8)
+        self.ax.legend(loc="upper right", title="Trajetórias", fontsize=8)
         plt.tight_layout()
         plt.show()
 
@@ -180,8 +191,8 @@ class GraphWarVizualizer:
 
         cor = self.cores["tiros"][indice_tiro % len(self.cores["tiros"])]
 
-        # Cria uma linha vazia no plano
-        linha, = self.ax.plot([], [], color=cor, linewidth=2.5, zorder=10)
+        # Cria uma linha vazia no plano com o label para a legenda
+        linha, = self.ax.plot([], [], color=cor, linewidth=2.5, zorder=10, label=f"Tiro {indice_tiro + 1}")
 
         xs_anim = []
         ys_anim = []
@@ -197,7 +208,7 @@ class GraphWarVizualizer:
             # Atualiza os dados da linha gradativamente
             linha.set_data(xs_anim, ys_anim)
             plt.draw()
-            plt.pause(0.008) 
+            plt.pause(0.01) 
 
         # Garante que o ponto final exato seja incluído
         if xs_anim[-1] != pontos_curva[-1][0]:

@@ -1,3 +1,4 @@
+from visualize import GraphWarVizualizer
 import numpy as np
 import random
 
@@ -81,7 +82,15 @@ class GraphwarEnv:
         
         # cálculo das metricas
         for (x, y) in pontos:
-            curva_percorrida.append((x,y))
+            # verifica se saiu do mapa (teto ou chão) e trava o ponto exatamente na borda
+            if y < 0:
+                curva_percorrida.append((x, 0.0))
+                break
+            elif y > self.ALTURA:
+                curva_percorrida.append((x, self.ALTURA))
+                break
+
+            curva_percorrida.append((x, y))
 
             # calcula a distancia euclidiana para o obstaculo
             distancia_obstaculo = np.sqrt((x - self.pos_obstaculo[0]) ** 2 + (y - self.pos_obstaculo[1]) ** 2)
@@ -102,44 +111,68 @@ class GraphwarEnv:
                 acertou = True
                 break
 
-            # verifica se saiu do mapa  
-            if y < 0 or y > self.ALTURA:
-                break
+        # reduzindo o numero de tiros 
+        self.tiros_restantes -= 1
 
-            # reduzindo o numero de tiros 
-            self.tiros_restantes -= 1
+        # calculo do erro vertical no X do alvo a partir da origem do disparo
+        x0, y0 = self.pos_atirador
+        dx_alvo = self.pos_alvo[0] - x0
+        y_previsto = a * (dx_alvo ** 2) + b * dx_alvo + y0
+        erro = y_previsto - self.pos_alvo[1]
 
-            # calculo do erro vertical
-            dx = self.pos_alvo[0] - x
-            y_previsto = y + a * (dx) ** 2 + b * (dx)
-            erro = y_previsto - self.pos_alvo[1]
+        self.ultimo_erro = erro
 
-            self.ultimo_erro = erro
+        # calcula a recompensa
+        r = -1.0 # penalidade padrao por disparo
+        if acertou == True:
+            r += 20.0
+        elif colidiu_obstaculo == True:
+            r += -5.0
+        else:
+            r += -2.0 * (distancia_minima / self.diagonal)
 
-            # calcula a recompensa
-            r = -1.0 # penalidade padrao por disparo
-            if acertou == True:
-                r += 20.0
-            elif colidiu_obstaculo == True:
-                r += -5.0
-            else:
-                r += -2.0 * (distancia_minima / self.diagonal)
+        finalizado = False
+        if acertou or self.tiros_restantes <= 0:
+            finalizado = True
 
-            finalizado = False
-            if acertou or self.tiros_restantes <= 0:
-                finalizado = True
-
-            info = {
-                "curva": curva_percorrida,
-                "status": 'acertou' if acertou else ('colidiu_obstaculo' if colidiu_obstaculo else 'errou'),
-                "acertou": acertou,
-                "colidiu_obstaculo": colidiu_obstaculo,
-                "distancia_minima": distancia_minima,
-                "recompensa": r,
-                "acao_ab": (a,b)
-            }
+        info = {
+            "curva": curva_percorrida,
+            "status": 'acertou' if acertou else ('colidiu_obstaculo' if colidiu_obstaculo else 'errou'),
+            "acertou": acertou,
+            "colidiu_obstaculo": colidiu_obstaculo,
+            "distancia_minima": distancia_minima,
+            "recompensa": r,
+            "acao_ab": (a,b)
+        }
             
-            return (self.obter_estado(), r, finalizado, info)
+        return (self.obter_estado(), r, finalizado, info)
 
+#teste grafico
+if __name__ == '__main__':
+    env = GraphwarEnv()
+    viz = GraphWarVizualizer(env)
 
-            
+    estado = env.reset()
+    historico_tiros = []
+    finalizado = False
+
+    print("Iniciando rodada de teste com tela...")
+
+    acoes_exemplo = [
+        random.randint(0, 25),
+        random.randint(0, 25),
+        random.randint(0, 25)
+    ]
+
+    print(acoes_exemplo)
+
+    while not finalizado:
+        acao_teste = acoes_exemplo[len(historico_tiros) % len(acoes_exemplo)]
+        estado, recompensa, finalizado, info = env.step(acao_teste)
+        
+        # Guarda o tiro no histórico para a tela poder desenhar
+        historico_tiros.append(info)
+        print(f"Tiro realizado: Status = {info['status']}, Recompensa = {recompensa:.2f}")
+
+    # 3. Manda o visualizador desenhar a rodada completa!
+    viz.renderizar_episodio(historico_tiros, estado)
