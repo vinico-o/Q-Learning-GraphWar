@@ -45,4 +45,14 @@ class GraphwarEnv:
 
         return self.obter_estado()
 
+    def obter_estado(self):
+        estado = {
+            "pos_atirador": self.pos_atirador,
+            "pos_obstaculo": self.pos_obstaculo,
+            "pos_alvo": self.pos_alvo,
+            "tiros_restantes": self.tiros_restantes,
+            "ultimo_erro": self.ultimo_erro
+        }
+
+        return estado
 
