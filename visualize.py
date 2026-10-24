@@ -9,18 +9,6 @@ class GraphWarVizualizer:
         # env é a instancia do GraphWarEnv
         self.env = env
 
-        # atirador
-        self.env.pos_atirador = (50, 50)
-        # alvo
-        self.env.pos_alvo = (75, 75)
-        self.env.raio_alvo = 5
-        # obstaculo
-        self.env.pos_obstaculo = (40, 45)
-        self.env.raio_obstaculo = 5
-        
-        self.LARGURA = 100
-        self.ALTURA = 100
-
         # Configura o tamanho da figura
         self.fig, self.ax = plt.subplots(figsize=(10, 8))
 
