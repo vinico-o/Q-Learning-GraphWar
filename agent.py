@@ -4,7 +4,7 @@ import random
 class AgenteQLearning:
     #Definindo o construtor do agente
     def __init__(self,env,alpha=0.1,gamma=0.9,epsilon=0.1):
-        self.NUM_FEATURES = 8
+        self.NUM_FEATURES = 10
         self.env = env
         self.alpha = alpha
         self.gamma = gamma
@@ -51,8 +51,18 @@ class AgenteQLearning:
         #Característica 7 - Tiros restantes
         f7 = estado["tiros_restantes"]/self.env.max_tiros
         
+        #caracteristica 8 e 9 - Erro do tiro anterior
+        # essa feature combinada com os coeficientes é importante 
+        # para ajustar se o tiro vai mais para cima ou para baixo
+        # Tentando resolver um problema, onde a IA manda o tiro sempre para o mesmo lugar quando erra
         
-        array_features = np.array([f0,f1,f2,f3,f4,f5,f6,f7])
+        ultimo_erro_normalizado = estado["ultimo_erro"] / self.env.ALTURA
+        a_normalizado = np.interp(a,[-0.02,0.02],[-1,1])
+        b_normalizado = np.interp(b,[-1,1],[-1,1])
+        f8 = ultimo_erro_normalizado * a_normalizado
+        f9 = ultimo_erro_normalizado * b_normalizado
+
+        array_features = np.array([f0,f1,f2,f3,f4,f5,f6,f7,f8,f9])
         
         return array_features
     
