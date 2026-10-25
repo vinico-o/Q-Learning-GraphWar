@@ -17,8 +17,8 @@ class GraphwarEnv:
         # Catalogo de acoes
         # A IA vai escolher uma combinacao de coeficientes a e b
         self.acoes = []
-        a_coeficientes = [-0.02, -0.01, 0.0, 0.01, 0.02]
-        b_coeficientes = [-1.0, -0.5, 0.0, 0.5, 1.0]
+        a_coeficientes = [-0.02, -0.014, -0.007, 0.0, 0.007, 0.014, 0.02]
+        b_coeficientes = [-1.0, -0.67, -0.33, 0.0, 0.33, 0.67, 1.0]
 
         for a in a_coeficientes:
             for b in b_coeficientes:
@@ -52,7 +52,7 @@ class GraphwarEnv:
             "pos_obstaculo": self.pos_obstaculo,
             "pos_alvo": self.pos_alvo,
             "tiros_restantes": self.tiros_restantes,
-            "ultimo_erro": self.ultimo_erro #erro em relação ao ultimo tiro, para saber qq tem que arrumar para atirar melhor.
+            "ultimo_erro": self.ultimo_erro
         }
 
         return estado
