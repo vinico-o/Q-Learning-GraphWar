@@ -52,7 +52,7 @@ class GraphwarEnv:
             "pos_obstaculo": self.pos_obstaculo,
             "pos_alvo": self.pos_alvo,
             "tiros_restantes": self.tiros_restantes,
-            "ultimo_erro": self.ultimo_erro
+            "ultimo_erro": self.ultimo_erro #erro em relação ao ultimo tiro, para saber qq tem que arrumar para atirar melhor.
         }
 
         return estado
