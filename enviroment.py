@@ -31,15 +31,19 @@ class GraphwarEnv:
         if seed is not None:
             random.seed(seed)
 
-        # sorteio do obstaculo
-        x_obs = random.uniform(30.0, 48.0)
-        y_obs = random.uniform(20.0, 70.0)
-        self.pos_obstaculo = (x_obs, y_obs)
-
         # sorteio do alvo
         x_alvo = random.uniform(55.0, 90.0)
         y_alvo = random.uniform(15.0, 85.0)
         self.pos_alvo = (x_alvo, y_alvo)
+
+        # calculo do meio
+        x_meio = (self.pos_atirador[0] + x_alvo) / 2.0
+        y_meio = (self.pos_atirador[1] + y_alvo) / 2.0
+
+        # sorteio do obstaculo
+        x_obs = x_meio + random.uniform(-15, 15)
+        y_obs = y_meio + random.uniform(-6, 6)
+        self.pos_obstaculo = (x_obs, y_obs)
 
         self.tiros_restantes = self.max_tiros
         self.ultimo_erro = 0.0
