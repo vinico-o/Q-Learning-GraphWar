@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from enviroment import GraphwarEnv
 from agent import AgenteQLearning
@@ -28,6 +29,7 @@ def treino():
 
                 # metrica para ver a precisão geral (melhor q visualizar o resultado somente)
                 sucessos_no_bloco = 0
+                precisao_geral = 0
                 intervalo_log = max(1, n_episodes // 10)
 
                 for episodio in range(n_episodes):
@@ -61,6 +63,7 @@ def treino():
                     # Mostra os resultados obtidos de acordo com os parâmetros no episódio a cada 10% do ep
                     if (episodio + 1) % intervalo_log== 0:
                         precisao = (sucessos_no_bloco / intervalo_log) * 100
+                        precisao_geral += precisao
                         eps_val = getattr(agent, 'epsilon', 0.1)
                         
                         print(f"Episódio {episodio + 1}/{n_episodes} | "
@@ -68,7 +71,16 @@ def treino():
                               f"Recompensa Última: {total_recompensa:.2f} | "
                               f"Epsilon: {eps_val:.3f}")
                         sucessos_no_bloco = 0
-                        
+                
+                precisao_geral = precisao_geral/10
+                print(f"Taxa de acerto geral: {precisao_geral:.1f}%")
+
+                #salvar os pesos de cada combinação de parâmetros
+                pasta_destino = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pesos_testes")
+                os.makedirs(pasta_destino, exist_ok=True)
+                nome_arquivo = f"pesos_alpha_{alpha}_gamma_{gamma}_ep_{n_episodes}.npy"
+                caminho_salvar = os.path.join(pasta_destino, nome_arquivo)
+                agent.salvar_pesos(caminho_salvar)
 
     print("Treinamento concluído")
 
